@@ -13,7 +13,7 @@ A centralized web platform where students report, search, and recover lost belon
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org/)
 [![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com/)
 [![License](https://img.shields.io/badge/License-Academic-lightgrey?style=flat-square)]()
-[![Status](https://img.shields.io/badge/Status-In%20Development-orange?style=flat-square)]()
+[![Status](https://img.shields.io/badge/Status-Finished-green?style=flat-square)]()
 
 <br />
 
