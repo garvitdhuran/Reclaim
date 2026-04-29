@@ -15,7 +15,7 @@ function Home() {
           padding: '0.7rem 1.4rem', borderRadius: '8px'
         }}>Browse Items</Link>
         <Link to="/post" style={{
-          background: '#f5f5f5', color: '#1a1a1a',
+          background: '#f5f5f5', color: '#181717ff',
           padding: '0.7rem 1.4rem', borderRadius: '8px'
         }}>Post an Item</Link>
       </div>

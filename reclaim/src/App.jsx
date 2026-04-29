@@ -5,6 +5,8 @@ import Browse from './pages/Browse'
 import PostItem from './pages/PostItem'
 import ItemDetails from './pages/ItemDetails'
 import Profile from './pages/Profile'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
         <Route path="/post" element={<PostItem />} />
         <Route path="/item/:id" element={<ItemDetails />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/login" element={<Login />} />
+<Route path="/signup" element={<Signup />} />
       </Routes>
     </BrowserRouter>
   )
