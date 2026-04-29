@@ -132,7 +132,7 @@ REACT_APP_FIREBASE_APP_ID=
 ### Phase 1 — Core MVP *(Week 1–2)*
 - [x] Project setup — React + Firebase config
 - [x] User authentication (signup / login / logout)
-- [ ] Post a lost item (name, description, location, date, image)
+- [x] Post a lost item (name, description, location, date, image)
 - [ ] Post a found item
 - [ ] Basic item listing page
 
