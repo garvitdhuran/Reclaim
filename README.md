@@ -133,8 +133,8 @@ REACT_APP_FIREBASE_APP_ID=
 - [x] Project setup — React + Firebase config
 - [x] User authentication (signup / login / logout)
 - [x] Post a lost item (name, description, location, date, image)
-- [ ] Post a found item
-- [ ] Basic item listing page
+- [x] Post a found item
+- [x] Basic item listing page
 
 ### Phase 2 — Search & Discovery *(Week 3)*
 - [ ] Keyword search
