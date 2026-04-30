@@ -14,33 +14,36 @@ function PostItem() {
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
+  e.preventDefault()
+  setError('')
 
-    if (!auth.currentUser) {
-      navigate('/login')
-      return
-    }
+  const user = auth.currentUser
 
-    setLoading(true)
-    try {
-      await addDoc(collection(db, 'items'), {
-        type,
-        title,
-        description,
-        location,
-        date,
-        status: 'active',
-        postedBy: auth.currentUser.uid,
-        postedByEmail: auth.currentUser.email,
-        createdAt: serverTimestamp()
-      })
-      navigate('/browse')
-    } catch (err) {
-      setError(err.message)
-    }
-    setLoading(false)
+  if (!user) {
+    navigate('/login')
+    return
   }
+
+  setLoading(true)
+  try {
+    await addDoc(collection(db, 'items'), {
+      type,
+      title,
+      description,
+      location,
+      date,
+      status: 'active',
+      postedBy: user.uid,
+      postedByEmail: user.email,
+      createdAt: serverTimestamp()
+    })
+    navigate('/browse')
+  } catch (err) {
+    setError(err.message)
+  }
+  setLoading(false)
+}
+
 
   return (
     <div style={{ maxWidth: '500px', margin: '3rem auto', padding: '0 2rem' }}>
