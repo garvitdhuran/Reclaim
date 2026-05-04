@@ -7,6 +7,7 @@ function PostItem() {
   const [type, setType] = useState('lost')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [category, setCategory] = useState('')
   const [location, setLocation] = useState('')
   const [date, setDate] = useState('')
   const [loading, setLoading] = useState(false)
@@ -14,36 +15,40 @@ function PostItem() {
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
-  e.preventDefault()
-  setError('')
+    e.preventDefault()
+    setError('')
 
-  const user = auth.currentUser
+    const user = auth.currentUser
+    if (!user) {
+      navigate('/login')
+      return
+    }
 
-  if (!user) {
-    navigate('/login')
-    return
+    if (!category) {
+      setError('Please select a category')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await addDoc(collection(db, 'items'), {
+        type,
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        location: location.trim(),
+        date,
+        status: 'active',
+        postedBy: user.uid,
+        postedByEmail: user.email,
+        createdAt: serverTimestamp()
+      })
+      navigate('/browse')
+    } catch (err) {
+      setError(err.message)
+    }
+    setLoading(false)
   }
-
-  setLoading(true)
-  try {
-    await addDoc(collection(db, 'items'), {
-      type,
-      title,
-      description,
-      location,
-      date,
-      status: 'active',
-      postedBy: user.uid,
-      postedByEmail: user.email,
-      createdAt: serverTimestamp()
-    })
-    navigate('/browse')
-  } catch (err) {
-    setError(err.message)
-  }
-  setLoading(false)
-}
-
 
   return (
     <div style={{ maxWidth: '500px', margin: '3rem auto', padding: '0 2rem' }}>
@@ -55,33 +60,11 @@ function PostItem() {
       {error && <p style={{ color: 'red', marginBottom: '1rem', fontSize: '0.85rem' }}>{error}</p>}
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-        {/* Lost or Found toggle */}
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button
-            type="button"
-            onClick={() => setType('lost')}
-            style={{
-              flex: 1, padding: '0.6rem',
-              borderRadius: '8px', border: '1px solid',
-              borderColor: type === 'lost' ? '#1a1a1a' : '#e0e0e0',
-              background: type === 'lost' ? '#1a1a1a' : '#fff',
-              color: type === 'lost' ? '#fff' : '#666',
-              fontWeight: '500', cursor: 'pointer'
-            }}>
+          <button type="button" onClick={() => setType('lost')} style={toggleStyle(type === 'lost')}>
             Lost
           </button>
-          <button
-            type="button"
-            onClick={() => setType('found')}
-            style={{
-              flex: 1, padding: '0.6rem',
-              borderRadius: '8px', border: '1px solid',
-              borderColor: type === 'found' ? '#1a1a1a' : '#e0e0e0',
-              background: type === 'found' ? '#1a1a1a' : '#fff',
-              color: type === 'found' ? '#fff' : '#666',
-              fontWeight: '500', cursor: 'pointer'
-            }}>
+          <button type="button" onClick={() => setType('found')} style={toggleStyle(type === 'found')}>
             Found
           </button>
         </div>
@@ -96,13 +79,26 @@ function PostItem() {
         />
 
         <textarea
-          placeholder="Description — color, brand, any details that help identify it"
+          placeholder="Description — color, brand, details"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required
           rows={3}
           style={{ ...inputStyle, resize: 'vertical' }}
         />
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          required
+          style={inputStyle}
+        >
+          <option value="">Select Category</option>
+          <option value="ID Card">ID Card</option>
+          <option value="Wallet">Wallet</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Other">Other</option>
+        </select>
 
         <input
           type="text"
@@ -132,10 +128,10 @@ function PostItem() {
             fontSize: '0.95rem',
             fontWeight: '500',
             cursor: loading ? 'not-allowed' : 'pointer'
-          }}>
+          }}
+        >
           {loading ? 'Posting...' : 'Post Item'}
         </button>
-
       </form>
     </div>
   )
@@ -149,5 +145,17 @@ const inputStyle = {
   outline: 'none',
   width: '100%'
 }
+
+const toggleStyle = (active) => ({
+  flex: 1,
+  padding: '0.6rem',
+  borderRadius: '8px',
+  border: '1px solid',
+  borderColor: active ? '#1a1a1a' : '#e0e0e0',
+  background: active ? '#1a1a1a' : '#fff',
+  color: active ? '#fff' : '#666',
+  fontWeight: '500',
+  cursor: 'pointer'
+})
 
 export default PostItem
