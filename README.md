@@ -129,31 +129,31 @@ REACT_APP_FIREBASE_APP_ID=
 
 ## Roadmap
 
-### Phase 1 — Core MVP *(Week 1–2)*
+### Phase 1 — Core MVP 
 - [x] Project setup — React + Firebase config
 - [x] User authentication (signup / login / logout)
 - [x] Post a lost item (name, description, location, date, image)
 - [x] Post a found item
 - [x] Basic item listing page
 
-### Phase 2 — Search & Discovery *(Week 3)*
+### Phase 2 — Search & Discovery 
 - [x] Keyword search
 - [x] Filter by location (library, hostel, canteen, etc.)
 - [ ] Item details page with full info + contact
 
-### Phase 3 — Interactions & Status *(Week 4)*
+### Phase 3 — Interactions & Status 
 - [ ] Claim / contact flow (show poster's contact info)
 - [ ] Mark item as Found or Returned
 - [ ] User profile page with own posts
 - [ ] Edit and delete own posts
 
-### Phase 4 — Polish & Deploy *(Week 5)*
+### Phase 4 — Polish & Deploy 
 - [ ] Responsive mobile design
 - [ ] Empty states, loading skeletons, error handling
 - [ ] Deploy to Firebase Hosting
 - [ ] Final testing and bug fixes
 
-### Phase 5 — Future Scope *(Post-submission)*
+### Phase 5 — Future Scope 
 - [ ] AI-based smart matching between lost and found posts
 - [ ] In-app messaging / chat
 - [ ] Push notifications when a potential match is found
