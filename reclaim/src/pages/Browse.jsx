@@ -1,11 +1,38 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import { Link } from 'react-router-dom'
 
+const LOCATIONS = ['All', 'Library', 'Atrium', 'Auditorium', 'A Block Mess', 'CCD', 'C Block', 'B Block', 'Chai Adda', 'Learners Arena', 'Pushpa Devi Mess', 'Football Ground', 'Basketball Court', 'Tennis Court', 'Main Ground', 'Other']
+
+const inputStyle = {
+  padding: '0.6rem 1rem',
+  borderRadius: '8px',
+  border: '1.5px solid #e0e0e0',
+  fontSize: '0.9rem',
+  outline: 'none',
+  fontFamily: 'inherit',
+  background: '#fff',
+  transition: 'border-color 0.2s',
+}
+
+const labelStyle = {
+  fontSize: '0.75rem',
+  color: '#aaa',
+  marginBottom: '0.3rem',
+  display: 'block',
+  fontWeight: '500',
+}
+
 function Browse() {
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [items, setItems]               = useState([])
+  const [loading, setLoading]           = useState(true)
+  const [keyword, setKeyword]           = useState('')
+  const [location, setLocation]         = useState('All')
+  const [locationText, setLocationText] = useState('')
+  const [exactDate, setExactDate]       = useState('')
+  const [dateFrom, setDateFrom]         = useState('')
+  const [dateTo, setDateTo]             = useState('')
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -22,61 +49,195 @@ function Browse() {
     fetchItems()
   }, [])
 
+  const filtered = useMemo(() => {
+    const kw  = keyword.trim().toLowerCase()
+    const loc = locationText.trim().toLowerCase()
+
+    return items.filter(item => {
+      // keyword — matches title or description
+      if (kw && !item.title?.toLowerCase().includes(kw) && !item.description?.toLowerCase().includes(kw)) return false
+
+      // location dropdown
+      if (location !== 'All' && !item.location?.toLowerCase().startsWith(location.toLowerCase())) return false
+
+      // location free-text
+      if (loc && !item.location?.toLowerCase().includes(loc)) return false
+
+      // exact date takes priority over range
+      if (exactDate) {
+        if (item.date !== exactDate) return false
+      } else {
+        if (dateFrom && item.date < dateFrom) return false
+        if (dateTo   && item.date > dateTo)   return false
+      }
+
+      return true
+    })
+  }, [items, keyword, location, locationText, exactDate, dateFrom, dateTo])
+
+  const clearAll = () => {
+    setKeyword('')
+    setLocation('All')
+    setLocationText('')
+    setExactDate('')
+    setDateFrom('')
+    setDateTo('')
+  }
+
+  const hasFilters = keyword || location !== 'All' || locationText || exactDate || dateFrom || dateTo
+
   if (loading) return <p style={{ padding: '3rem 2rem', color: '#999' }}>Loading...</p>
 
   return (
     <div style={{ maxWidth: '800px', margin: '3rem auto', padding: '0 2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ fontWeight: '700' }}>Browse Items</h2>
+
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h2 style={{ fontWeight: '700', fontSize: '1.6rem', color: '#111' }}>Browse Items</h2>
         <Link to="/post" style={{
           background: '#1a1a1a', color: '#fff',
-          padding: '0.5rem 1.2rem', borderRadius: '8px', fontSize: '0.85rem'
+          padding: '0.5rem 1.2rem', borderRadius: '8px', fontSize: '0.85rem',
+          textDecoration: 'none', fontWeight: '500',
         }}>+ Post Item</Link>
       </div>
 
-      {items.length === 0 && (
-        <p style={{ color: '#999' }}>No items posted yet. Be the first!</p>
+      {/* Filters */}
+      <div style={{
+        background: '#fafafa', border: '1px solid #eee', borderRadius: '12px',
+        padding: '1.1rem 1.25rem', marginBottom: '1.5rem',
+        display: 'flex', flexDirection: 'column', gap: '1rem',
+      }}>
+
+        {/* Keyword */}
+        <input
+          type="text"
+          placeholder="🔍  Search by keyword…"
+          value={keyword}
+          onChange={e => setKeyword(e.target.value)}
+          style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
+          onFocus={e => e.target.style.borderColor = '#1a1a1a'}
+          onBlur={e => e.target.style.borderColor = '#e0e0e0'}
+        />
+
+        {/* Location row */}
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+          <select
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            style={{ ...inputStyle, flex: '0 0 auto' }}
+          >
+            {LOCATIONS.map(l => <option key={l} value={l}>{l === 'All' ? 'All locations' : l}</option>)}
+          </select>
+          <input
+            type="text"
+            placeholder="Or type a location…"
+            value={locationText}
+            onChange={e => setLocationText(e.target.value)}
+            style={{ ...inputStyle, flex: '1 1 140px' }}
+            onFocus={e => e.target.style.borderColor = '#1a1a1a'}
+            onBlur={e => e.target.style.borderColor = '#e0e0e0'}
+          />
+        </div>
+
+        {/* Date filters */}
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ flex: '1 1 140px' }}>
+            <label style={labelStyle}>Exact date</label>
+            <input
+              type="date"
+              value={exactDate}
+              onChange={e => { setExactDate(e.target.value); setDateFrom(''); setDateTo('') }}
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
+          <span style={{ color: '#ccc', fontSize: '0.85rem', paddingBottom: '0.6rem' }}>or</span>
+          <div style={{ flex: '1 1 120px' }}>
+            <label style={labelStyle}>From</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={e => { setDateFrom(e.target.value); setExactDate('') }}
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
+          <div style={{ flex: '1 1 120px' }}>
+            <label style={labelStyle}>To</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={e => { setDateTo(e.target.value); setExactDate('') }}
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
+        </div>
+
+        {/* Clear filters */}
+        {hasFilters && (
+          <button onClick={clearAll} style={{
+            alignSelf: 'flex-start', background: 'none', border: 'none',
+            color: '#999', fontSize: '0.8rem', cursor: 'pointer',
+            padding: 0, textDecoration: 'underline',
+          }}>
+            Clear all filters
+          </button>
+        )}
+      </div>
+
+      {/* Result count */}
+      <p style={{ fontSize: '0.82rem', color: '#aaa', marginBottom: '1rem' }}>
+        {filtered.length} {filtered.length === 1 ? 'item' : 'items'} found
+        {hasFilters ? ' for current filters' : ''}
+      </p>
+
+      {/* Empty state */}
+      {filtered.length === 0 && (
+        <div style={{
+          textAlign: 'center', padding: '3rem 1rem', color: '#bbb',
+          border: '1.5px dashed #eee', borderRadius: '12px',
+        }}>
+          <p style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🔍</p>
+          <p style={{ fontWeight: '500', color: '#999' }}>No items match your filters.</p>
+          <p style={{ fontSize: '0.85rem' }}>Try a different keyword or clear the filters.</p>
+        </div>
       )}
 
+      {/* Item list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {items.map(item => (
+        {filtered.map(item => (
           <Link to={`/item/${item.id}`} key={item.id} style={{ textDecoration: 'none' }}>
-            <div style={{
-              border: '1px solid #eee',
-              borderRadius: '12px',
-              padding: '1.25rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              transition: 'border-color 0.2s'
-            }}
+            <div
+              style={{
+                border: '1px solid #eee', borderRadius: '12px', padding: '1.25rem',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                transition: 'border-color 0.2s', background: '#fff',
+              }}
               onMouseEnter={e => e.currentTarget.style.borderColor = '#ccc'}
               onMouseLeave={e => e.currentTarget.style.borderColor = '#eee'}
             >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                   <span style={{
-                    fontSize: '0.75rem', fontWeight: '600',
-                    padding: '2px 8px', borderRadius: '20px',
+                    fontSize: '0.72rem', fontWeight: '600', padding: '2px 8px', borderRadius: '20px',
                     background: item.type === 'lost' ? '#fff0f0' : '#f0fff4',
-                    color: item.type === 'lost' ? '#cc0000' : '#007a33'
+                    color: item.type === 'lost' ? '#cc0000' : '#007a33',
                   }}>
                     {item.type === 'lost' ? 'Lost' : 'Found'}
                   </span>
-                  <span style={{ fontSize: '0.8rem', color: '#999' }}>{item.date}</span>
+                  <span style={{ fontSize: '0.78rem', color: '#bbb' }}>{item.date}</span>
                 </div>
-                <h3 style={{ fontWeight: '600', fontSize: '1rem', color: '#1a1a1a', marginBottom: '0.3rem' }}>
+                <h3 style={{ fontWeight: '600', fontSize: '1rem', color: '#1a1a1a', marginBottom: '0.25rem' }}>
                   {item.title}
                 </h3>
-                <p style={{ fontSize: '0.85rem', color: '#666' }}>{item.location}</p>
+                <p style={{ fontSize: '0.83rem', color: '#888' }}>📍 {item.location}</p>
               </div>
-              <span style={{ fontSize: '0.8rem', color: '#bbb', whiteSpace: 'nowrap', marginLeft: '1rem' }}>
+              <span style={{ fontSize: '0.8rem', color: '#bbb', whiteSpace: 'nowrap', marginLeft: '1rem', marginTop: '0.2rem' }}>
                 View →
               </span>
             </div>
           </Link>
         ))}
       </div>
+
     </div>
   )
 }

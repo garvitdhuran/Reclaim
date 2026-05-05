@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from './firebase/config'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Browse from './pages/Browse'
@@ -9,6 +12,18 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 
 function App() {
+  const [authReady, setAuthReady] = useState(false)
+
+  useEffect(() => {
+    // Wait for Firebase to restore auth session before rendering
+    const unsub = onAuthStateChanged(auth, () => {
+      setAuthReady(true)
+    })
+    return () => unsub()
+  }, [])
+
+  if (!authReady) return null // or a loading spinner
+
   return (
     <BrowserRouter>
       <Navbar />
@@ -19,7 +34,7 @@ function App() {
         <Route path="/item/:id" element={<ItemDetails />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
-<Route path="/signup" element={<Signup />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
     </BrowserRouter>
   )
