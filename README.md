@@ -137,9 +137,8 @@ REACT_APP_FIREBASE_APP_ID=
 - [x] Basic item listing page
 
 ### Phase 2 — Search & Discovery *(Week 3)*
-- [ ] Keyword search
-- [ ] Filter by category (ID card, wallet, electronics, etc.)
-- [ ] Filter by location (library, hostel, canteen, etc.)
+- [x] Keyword search
+- [x] Filter by location (library, hostel, canteen, etc.)
 - [ ] Item details page with full info + contact
 
 ### Phase 3 — Interactions & Status *(Week 4)*
