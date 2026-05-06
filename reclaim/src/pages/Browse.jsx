@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom'
 
 const LOCATIONS = ['All', 'Library', 'Atrium', 'Auditorium', 'A Block Mess', 'CCD', 'C Block', 'B Block', 'Chai Adda', 'Learners Arena', 'Pushpa Devi Mess', 'Football Ground', 'Basketball Court', 'Tennis Court', 'Main Ground', 'Other']
 
+const CATEGORIES = ['All', 'ID Card', 'Wallet', 'Phone', 'Earphones', 'Laptop', 'Bottle', 'Keys', 'Bag', 'Charger', 'Stationery', 'Clothing', 'Other']
+
 const inputStyle = {
   padding: '0.6rem 1rem',
   borderRadius: '8px',
@@ -30,6 +32,7 @@ function Browse() {
   const [keyword, setKeyword]           = useState('')
   const [location, setLocation]         = useState('All')
   const [locationText, setLocationText] = useState('')
+  const [category, setCategory]         = useState('All')
   const [exactDate, setExactDate]       = useState('')
   const [dateFrom, setDateFrom]         = useState('')
   const [dateTo, setDateTo]             = useState('')
@@ -54,16 +57,15 @@ function Browse() {
     const loc = locationText.trim().toLowerCase()
 
     return items.filter(item => {
-      // keyword — matches title or description
       if (kw && !item.title?.toLowerCase().includes(kw) && !item.description?.toLowerCase().includes(kw)) return false
-
-      // location dropdown
       if (location !== 'All' && !item.location?.toLowerCase().startsWith(location.toLowerCase())) return false
-
-      // location free-text
       if (loc && !item.location?.toLowerCase().includes(loc)) return false
 
-      // exact date takes priority over range
+      // category filter
+      if (category !== 'All') {
+        if (!item.category || item.category.toLowerCase() !== category.toLowerCase()) return false
+      }
+
       if (exactDate) {
         if (item.date !== exactDate) return false
       } else {
@@ -73,18 +75,19 @@ function Browse() {
 
       return true
     })
-  }, [items, keyword, location, locationText, exactDate, dateFrom, dateTo])
+  }, [items, keyword, location, locationText, category, exactDate, dateFrom, dateTo])
 
   const clearAll = () => {
     setKeyword('')
     setLocation('All')
     setLocationText('')
+    setCategory('All')
     setExactDate('')
     setDateFrom('')
     setDateTo('')
   }
 
-  const hasFilters = keyword || location !== 'All' || locationText || exactDate || dateFrom || dateTo
+  const hasFilters = keyword || location !== 'All' || locationText || category !== 'All' || exactDate || dateFrom || dateTo
 
   if (loading) return <p style={{ padding: '3rem 2rem', color: '#999' }}>Loading...</p>
 
@@ -118,6 +121,34 @@ function Browse() {
           onFocus={e => e.target.style.borderColor = '#1a1a1a'}
           onBlur={e => e.target.style.borderColor = '#e0e0e0'}
         />
+
+        {/* Category chips */}
+        <div>
+          <label style={labelStyle}>Category</label>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                style={{
+                  padding: '0.3rem 0.85rem',
+                  borderRadius: '20px',
+                  border: '1.5px solid',
+                  borderColor: category === cat ? '#1a1a1a' : '#e0e0e0',
+                  background: category === cat ? '#1a1a1a' : '#fff',
+                  color: category === cat ? '#fff' : '#666',
+                  fontSize: '0.8rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Location row */}
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
@@ -223,6 +254,14 @@ function Browse() {
                   }}>
                     {item.type === 'lost' ? 'Lost' : 'Found'}
                   </span>
+                  {item.category && (
+                    <span style={{
+                      fontSize: '0.72rem', fontWeight: '500', padding: '2px 8px', borderRadius: '20px',
+                      background: '#f0f0f0', color: '#555',
+                    }}>
+                      {item.category}
+                    </span>
+                  )}
                   <span style={{ fontSize: '0.78rem', color: '#bbb' }}>{item.date}</span>
                 </div>
                 <h3 style={{ fontWeight: '600', fontSize: '1rem', color: '#1a1a1a', marginBottom: '0.25rem' }}>
