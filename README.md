@@ -139,7 +139,7 @@ REACT_APP_FIREBASE_APP_ID=
 ### Phase 2 — Search & Discovery 
 - [x] Keyword search
 - [x] Filter by location (library, hostel, canteen, etc.)
-- [ ] Item details page with full info + contact
+- [x] Item details page with full info + contact
 
 ### Phase 3 — Interactions & Status 
 - [ ] Claim / contact flow (show poster's contact info)
