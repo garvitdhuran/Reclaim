@@ -142,9 +142,9 @@ REACT_APP_FIREBASE_APP_ID=
 - [x] Item details page with full info + contact
 
 ### Phase 3 — Interactions & Status 
-- [ ] Claim / contact flow (show poster's contact info)
-- [ ] Mark item as Found or Returned
-- [ ] User profile page with own posts
+- [x] Claim / contact flow (show poster's contact info)
+- [x] Mark item as Found or Returned
+- [x] User profile page with own posts
 - [ ] Edit and delete own posts
 
 ### Phase 4 — Polish & Deploy 
