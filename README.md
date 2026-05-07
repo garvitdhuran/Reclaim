@@ -148,7 +148,7 @@ REACT_APP_FIREBASE_APP_ID=
 - [x] Edit and delete own posts
 
 ### Phase 4 — Polish & Deploy 
-- [ ] Responsive mobile design
+- [x] Responsive mobile design
 - [ ] Empty states, loading skeletons, error handling
 - [ ] Deploy to Firebase Hosting
 - [ ] Final testing and bug fixes
