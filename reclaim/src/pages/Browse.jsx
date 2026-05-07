@@ -16,6 +16,8 @@ const inputStyle = {
   fontFamily: 'inherit',
   background: '#fff',
   transition: 'border-color 0.2s',
+  width: '100%',
+  boxSizing: 'border-box',
 }
 
 const labelStyle = {
@@ -55,36 +57,26 @@ function Browse() {
   const filtered = useMemo(() => {
     const kw  = keyword.trim().toLowerCase()
     const loc = locationText.trim().toLowerCase()
-
     return items.filter(item => {
       if (kw && !item.title?.toLowerCase().includes(kw) && !item.description?.toLowerCase().includes(kw)) return false
       if (location !== 'All' && !item.location?.toLowerCase().startsWith(location.toLowerCase())) return false
       if (loc && !item.location?.toLowerCase().includes(loc)) return false
-
-      // category filter
       if (category !== 'All') {
         if (!item.category || item.category.toLowerCase() !== category.toLowerCase()) return false
       }
-
       if (exactDate) {
         if (item.date !== exactDate) return false
       } else {
         if (dateFrom && item.date < dateFrom) return false
         if (dateTo   && item.date > dateTo)   return false
       }
-
       return true
     })
   }, [items, keyword, location, locationText, category, exactDate, dateFrom, dateTo])
 
   const clearAll = () => {
-    setKeyword('')
-    setLocation('All')
-    setLocationText('')
-    setCategory('All')
-    setExactDate('')
-    setDateFrom('')
-    setDateTo('')
+    setKeyword(''); setLocation('All'); setLocationText('')
+    setCategory('All'); setExactDate(''); setDateFrom(''); setDateTo('')
   }
 
   const hasFilters = keyword || location !== 'All' || locationText || category !== 'All' || exactDate || dateFrom || dateTo
@@ -92,129 +84,98 @@ function Browse() {
   if (loading) return <p style={{ padding: '3rem 2rem', color: '#999' }}>Loading...</p>
 
   return (
-    <div style={{ maxWidth: '800px', margin: '3rem auto', padding: '0 2rem' }}>
+    <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '0 1rem' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h2 style={{ fontWeight: '700', fontSize: '1.6rem', color: '#111' }}>Browse Items</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+        <h2 style={{ fontWeight: '700', fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', color: '#111' }}>Browse Items</h2>
         <Link to="/post" style={{
           background: '#1a1a1a', color: '#fff',
-          padding: '0.5rem 1.2rem', borderRadius: '8px', fontSize: '0.85rem',
-          textDecoration: 'none', fontWeight: '500',
+          padding: '0.5rem 1rem', borderRadius: '8px',
+          fontSize: '0.82rem', textDecoration: 'none', fontWeight: '500', whiteSpace: 'nowrap'
         }}>+ Post Item</Link>
       </div>
 
       {/* Filters */}
       <div style={{
         background: '#fafafa', border: '1px solid #eee', borderRadius: '12px',
-        padding: '1.1rem 1.25rem', marginBottom: '1.5rem',
-        display: 'flex', flexDirection: 'column', gap: '1rem',
+        padding: '1rem', marginBottom: '1.25rem',
+        display: 'flex', flexDirection: 'column', gap: '0.9rem',
       }}>
-
         {/* Keyword */}
         <input
           type="text"
           placeholder="🔍  Search by keyword…"
           value={keyword}
           onChange={e => setKeyword(e.target.value)}
-          style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
-          onFocus={e => e.target.style.borderColor = '#1a1a1a'}
-          onBlur={e => e.target.style.borderColor = '#e0e0e0'}
+          style={inputStyle}
         />
 
         {/* Category chips */}
         <div>
           <label style={labelStyle}>Category</label>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
             {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                style={{
-                  padding: '0.3rem 0.85rem',
-                  borderRadius: '20px',
-                  border: '1.5px solid',
-                  borderColor: category === cat ? '#1a1a1a' : '#e0e0e0',
-                  background: category === cat ? '#1a1a1a' : '#fff',
-                  color: category === cat ? '#fff' : '#666',
-                  fontSize: '0.8rem',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                  fontFamily: 'inherit',
-                }}
-              >
+              <button key={cat} onClick={() => setCategory(cat)} style={{
+                padding: '0.25rem 0.75rem', borderRadius: '20px', border: '1.5px solid',
+                borderColor: category === cat ? '#1a1a1a' : '#e0e0e0',
+                background: category === cat ? '#1a1a1a' : '#fff',
+                color: category === cat ? '#fff' : '#666',
+                fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}>
                 {cat}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Location row */}
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-          <select
-            value={location}
-            onChange={e => setLocation(e.target.value)}
-            style={{ ...inputStyle, flex: '0 0 auto' }}
-          >
+        {/* Location */}
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <select value={location} onChange={e => setLocation(e.target.value)}
+            style={{ ...inputStyle, width: 'auto', flex: '1 1 140px' }}>
             {LOCATIONS.map(l => <option key={l} value={l}>{l === 'All' ? 'All locations' : l}</option>)}
           </select>
           <input
-            type="text"
-            placeholder="Or type a location…"
-            value={locationText}
-            onChange={e => setLocationText(e.target.value)}
+            type="text" placeholder="Or type a location…"
+            value={locationText} onChange={e => setLocationText(e.target.value)}
             style={{ ...inputStyle, flex: '1 1 140px' }}
-            onFocus={e => e.target.style.borderColor = '#1a1a1a'}
-            onBlur={e => e.target.style.borderColor = '#e0e0e0'}
           />
         </div>
 
         {/* Date filters */}
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <div style={{ flex: '1 1 140px' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ flex: '1 1 120px' }}>
             <label style={labelStyle}>Exact date</label>
-            <input
-              type="date"
-              value={exactDate}
+            <input type="date" value={exactDate}
               onChange={e => { setExactDate(e.target.value); setDateFrom(''); setDateTo('') }}
-              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
-            />
+              style={inputStyle} />
           </div>
-          <span style={{ color: '#ccc', fontSize: '0.85rem', paddingBottom: '0.6rem' }}>or</span>
-          <div style={{ flex: '1 1 120px' }}>
+          <span style={{ color: '#ccc', fontSize: '0.82rem', paddingBottom: '0.5rem' }}>or</span>
+          <div style={{ flex: '1 1 100px' }}>
             <label style={labelStyle}>From</label>
-            <input
-              type="date"
-              value={dateFrom}
+            <input type="date" value={dateFrom}
               onChange={e => { setDateFrom(e.target.value); setExactDate('') }}
-              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
-            />
+              style={inputStyle} />
           </div>
-          <div style={{ flex: '1 1 120px' }}>
+          <div style={{ flex: '1 1 100px' }}>
             <label style={labelStyle}>To</label>
-            <input
-              type="date"
-              value={dateTo}
+            <input type="date" value={dateTo}
               onChange={e => { setDateTo(e.target.value); setExactDate('') }}
-              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
-            />
+              style={inputStyle} />
           </div>
         </div>
 
-        {/* Clear filters */}
         {hasFilters && (
           <button onClick={clearAll} style={{
             alignSelf: 'flex-start', background: 'none', border: 'none',
             color: '#999', fontSize: '0.8rem', cursor: 'pointer',
-            padding: 0, textDecoration: 'underline',
-          }}>
-            Clear all filters
-          </button>
+            padding: 0, textDecoration: 'underline', fontFamily: 'inherit',
+          }}>Clear all filters</button>
         )}
       </div>
 
-      {/* Result count */}
+      {/* Count */}
       <p style={{ fontSize: '0.82rem', color: '#aaa', marginBottom: '1rem' }}>
         {filtered.length} {filtered.length === 1 ? 'item' : 'items'} found
         {hasFilters ? ' for current filters' : ''}
@@ -232,21 +193,20 @@ function Browse() {
         </div>
       )}
 
-      {/* Item list */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {/* Items */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         {filtered.map(item => (
           <Link to={`/item/${item.id}`} key={item.id} style={{ textDecoration: 'none' }}>
-            <div
-              style={{
-                border: '1px solid #eee', borderRadius: '12px', padding: '1.25rem',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                transition: 'border-color 0.2s', background: '#fff',
-              }}
+            <div style={{
+              border: '1px solid #eee', borderRadius: '12px', padding: '1rem',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+              transition: 'border-color 0.2s', background: '#fff',
+            }}
               onMouseEnter={e => e.currentTarget.style.borderColor = '#ccc'}
               onMouseLeave={e => e.currentTarget.style.borderColor = '#eee'}
             >
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
                   <span style={{
                     fontSize: '0.72rem', fontWeight: '600', padding: '2px 8px', borderRadius: '20px',
                     background: item.type === 'lost' ? '#fff0f0' : '#f0fff4',
@@ -256,27 +216,27 @@ function Browse() {
                   </span>
                   {item.category && (
                     <span style={{
-                      fontSize: '0.72rem', fontWeight: '500', padding: '2px 8px', borderRadius: '20px',
-                      background: '#f0f0f0', color: '#555',
-                    }}>
-                      {item.category}
-                    </span>
+                      fontSize: '0.72rem', padding: '2px 8px', borderRadius: '20px',
+                      background: '#f0f0f0', color: '#555', fontWeight: '500',
+                    }}>{item.category}</span>
                   )}
-                  <span style={{ fontSize: '0.78rem', color: '#bbb' }}>{item.date}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#bbb' }}>{item.date}</span>
                 </div>
-                <h3 style={{ fontWeight: '600', fontSize: '1rem', color: '#1a1a1a', marginBottom: '0.25rem' }}>
+                <h3 style={{
+                  fontWeight: '600', fontSize: '0.95rem', color: '#1a1a1a',
+                  marginBottom: '0.2rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                }}>
                   {item.title}
                 </h3>
-                <p style={{ fontSize: '0.83rem', color: '#888' }}>📍 {item.location}</p>
+                <p style={{ fontSize: '0.82rem', color: '#888', margin: 0 }}>📍 {item.location}</p>
               </div>
-              <span style={{ fontSize: '0.8rem', color: '#bbb', whiteSpace: 'nowrap', marginLeft: '1rem', marginTop: '0.2rem' }}>
+              <span style={{ fontSize: '0.8rem', color: '#bbb', whiteSpace: 'nowrap', marginLeft: '0.75rem', marginTop: '0.2rem' }}>
                 View →
               </span>
             </div>
           </Link>
         ))}
       </div>
-
     </div>
   )
 }

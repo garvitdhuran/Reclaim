@@ -14,3 +14,12 @@ a {
   text-decoration: none;
   color: inherit;
 }
+
+@media (max-width: 600px) {
+  .desktop-nav {
+    display: none !important;
+  }
+  .hamburger {
+    display: flex !important;
+  }
+}
