@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from './firebase/config'
 import Navbar from './components/Navbar'
@@ -13,16 +13,23 @@ import Signup from './pages/Signup'
 
 function App() {
   const [authReady, setAuthReady] = useState(false)
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
-    // Wait for Firebase to restore auth session before rendering
-    const unsub = onAuthStateChanged(auth, () => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser)
       setAuthReady(true)
     })
     return () => unsub()
   }, [])
 
-  if (!authReady) return null // or a loading spinner
+  if (!authReady) {
+    return (
+      <div style={{ padding: '3rem', textAlign: 'center' }}>
+        Loading...
+      </div>
+    )
+  }
 
   return (
     <BrowserRouter>
@@ -30,11 +37,13 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/browse" element={<Browse />} />
-        <Route path="/post" element={<PostItem />} />
         <Route path="/item/:id" element={<ItemDetails />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
+
+        <Route path="/post" element={user ? <PostItem /> : <Navigate to="/login" />} />
+        <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   )
