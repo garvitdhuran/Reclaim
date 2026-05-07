@@ -9,6 +9,11 @@ const LOCATIONS = [
   'Football Ground', 'Basketball Court', 'Tennis Court', 'Main Ground', 'R1', 'R2', 'R3', 'Other'
 ]
 
+const CATEGORIES = [
+  'ID Card', 'Wallet', 'Phone', 'Earphones', 'Laptop', 'Bottle',
+  'Keys', 'Bag', 'Charger', 'Stationery', 'Clothing', 'Other'
+]
+
 const inputStyle = {
   padding: '0.75rem 1rem',
   borderRadius: '8px',
@@ -40,6 +45,7 @@ function PostItem() {
   const [type, setType]                     = useState('lost')
   const [title, setTitle]                   = useState('')
   const [description, setDescription]       = useState('')
+  const [category, setCategory]             = useState('')
   const [location, setLocation]             = useState('')
   const [locationDetail, setLocationDetail] = useState('')
   const [date, setDate]                     = useState('')
@@ -54,7 +60,6 @@ function PostItem() {
 
   const today = new Date().toISOString().split('T')[0]
 
-  // ── Cloudinary upload ──
   const uploadImage = async (file) => {
     const formData = new FormData()
     formData.append('file', file)
@@ -79,6 +84,9 @@ function PostItem() {
       errors.description = 'Description is required.'
     } else if (description.trim().length < 10) {
       errors.description = 'Please add a bit more detail (min 10 characters).'
+    }
+    if (!category) {
+      errors.category = 'Please select a category.'
     }
     if (!location) {
       errors.location = 'Please select a location.'
@@ -145,6 +153,7 @@ function PostItem() {
         type,
         title: title.trim(),
         description: description.trim(),
+        category,
         location: fullLocation,
         date,
         imageUrl,
@@ -242,6 +251,20 @@ function PostItem() {
           </div>
         </div>
 
+        {/* Category */}
+        <div>
+          <select
+            value={category}
+            onChange={(e) => { setCategory(e.target.value); handleBlur('category') }}
+            onBlur={() => handleBlur('category')}
+            style={fieldErrors.category ? inputErrorStyle : inputStyle}
+          >
+            <option value="">Select a category…</option>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <FieldError msg={fieldErrors.category} />
+        </div>
+
         {/* Location */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <select
@@ -278,7 +301,7 @@ function PostItem() {
           <FieldError msg={fieldErrors.date} />
         </div>
 
-        {/* Image Upload with preview */}
+        {/* Image Upload */}
         <div>
           {!imagePreview ? (
             <label style={{
