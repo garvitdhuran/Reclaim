@@ -199,7 +199,7 @@ This is an academic project. If you'd like to suggest improvements or report a b
 
 ## License
 
-Built for academic purposes — Reclaim, 2025.
+Built for academic purposes — Reclaim, 2026.
 
 ---
 
