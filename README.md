@@ -145,7 +145,7 @@ REACT_APP_FIREBASE_APP_ID=
 - [x] Claim / contact flow (show poster's contact info)
 - [x] Mark item as Found or Returned
 - [x] User profile page with own posts
-- [ ] Edit and delete own posts
+- [x] Edit and delete own posts
 
 ### Phase 4 — Polish & Deploy 
 - [ ] Responsive mobile design
