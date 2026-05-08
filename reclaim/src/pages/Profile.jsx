@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { collection, query, where, getDocs, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db, auth } from '../firebase/config'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 const LOCATIONS = [
   'Library', 'Atrium', 'Auditorium', 'A Block Mess', 'CCD', 'C Block',
@@ -27,15 +27,98 @@ const STATUS_LABEL = {
 }
 
 const inputStyle = {
-  padding: '0.6rem 0.9rem',
-  borderRadius: '8px',
-  border: '1.5px solid #e0e0e0',
-  fontSize: '0.88rem',
-  outline: 'none',
-  width: '100%',
-  boxSizing: 'border-box',
-  fontFamily: 'inherit',
-  background: '#fff',
+  padding: '0.6rem 0.9rem', borderRadius: '8px', border: '1.5px solid #e0e0e0',
+  fontSize: '0.88rem', outline: 'none', width: '100%', boxSizing: 'border-box',
+  fontFamily: 'inherit', background: '#fff',
+}
+
+// ── Skeleton ───────────────────────────────────────────────
+function shimmer(extra = {}) {
+  return {
+    background: 'linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 1.4s infinite',
+    borderRadius: '6px',
+    ...extra,
+  }
+}
+
+function SkeletonCard() {
+  return (
+    <div style={{
+      border: '1px solid #eee', borderRadius: '12px',
+      padding: '1rem', background: '#fff',
+      display: 'flex', flexDirection: 'column', gap: '0.6rem',
+    }}>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={shimmer({ width: '48px', height: '20px', borderRadius: '20px' })} />
+        <div style={shimmer({ width: '70px', height: '20px', borderRadius: '20px' })} />
+      </div>
+      <div style={shimmer({ width: '50%', height: '15px' })} />
+      <div style={shimmer({ width: '35%', height: '13px' })} />
+      <div style={shimmer({ width: '80%', height: '13px' })} />
+    </div>
+  )
+}
+
+function ProfileSkeleton() {
+  return (
+    <div style={{ maxWidth: '640px', margin: '2rem auto', padding: '0 1rem' }}>
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+
+      {/* Header skeleton */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={shimmer({ width: '140px', height: '28px', marginBottom: '0.5rem' })} />
+        <div style={shimmer({ width: '200px', height: '14px' })} />
+      </div>
+
+      {/* Stats skeleton */}
+      <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '2rem' }}>
+        {[1, 2, 3].map(i => (
+          <div key={i} style={{
+            flex: '1 1 70px', borderRadius: '10px', padding: '0.75rem 0.5rem',
+            background: '#f9f9f9', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: '0.4rem',
+          }}>
+            <div style={shimmer({ width: '32px', height: '28px' })} />
+            <div style={shimmer({ width: '60px', height: '12px' })} />
+          </div>
+        ))}
+      </div>
+
+      {/* Item skeletons */}
+      <div style={shimmer({ width: '180px', height: '18px', marginBottom: '0.9rem' })} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+        {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
+      </div>
+    </div>
+  )
+}
+
+// ── Error state ────────────────────────────────────────────
+function ErrorState({ onRetry }) {
+  return (
+    <div style={{
+      textAlign: 'center', padding: '3rem 1rem',
+      border: '1.5px dashed #eee', borderRadius: '12px', marginTop: '2rem',
+    }}>
+      <p style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>⚠️</p>
+      <p style={{ fontWeight: '600', color: '#333', marginBottom: '0.4rem' }}>Failed to load your items</p>
+      <p style={{ fontSize: '0.85rem', color: '#999', marginBottom: '1rem' }}>
+        Check your connection and try again.
+      </p>
+      <button onClick={onRetry} style={{
+        padding: '0.5rem 1.2rem', borderRadius: '8px',
+        background: '#1a1a1a', color: '#fff', border: 'none',
+        fontSize: '0.85rem', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit',
+      }}>Try again</button>
+    </div>
+  )
 }
 
 function Badge({ text, bg, color }) {
@@ -170,13 +253,21 @@ const actionBtn = (bg, color) => ({
   fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit',
 })
 
-function EmptyState({ msg }) {
+function EmptyState({ msg, cta }) {
   return (
     <div style={{
       textAlign: 'center', padding: '2rem 1rem',
       border: '1.5px dashed #eee', borderRadius: '12px', color: '#bbb',
     }}>
-      <p style={{ margin: 0, fontSize: '0.88rem' }}>{msg}</p>
+      <p style={{ fontSize: '1.5rem', margin: '0 0 0.4rem' }}>📭</p>
+      <p style={{ margin: '0 0 0.75rem', fontSize: '0.88rem', color: '#999' }}>{msg}</p>
+      {cta && (
+        <Link to="/post" style={{
+          display: 'inline-block', padding: '0.4rem 1rem',
+          background: '#1a1a1a', color: '#fff', borderRadius: '8px',
+          fontSize: '0.82rem', textDecoration: 'none', fontWeight: '500',
+        }}>+ Post an Item</Link>
+      )}
     </div>
   )
 }
@@ -184,23 +275,30 @@ function EmptyState({ msg }) {
 function Profile() {
   const [items, setItems]     = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState(false)
   const navigate = useNavigate()
   const user = auth.currentUser
 
+  const fetchMyItems = async () => {
+    setLoading(true)
+    setError(false)
+    try {
+      const q = query(
+        collection(db, 'items'),
+        where('postedBy', '==', user.uid),
+        orderBy('createdAt', 'desc')
+      )
+      const snapshot = await getDocs(q)
+      setItems(snapshot.docs.map(d => ({ id: d.id, ...d.data() })))
+    } catch (err) {
+      console.error(err)
+      setError(true)
+    }
+    setLoading(false)
+  }
+
   useEffect(() => {
     if (!user) { navigate('/login'); return }
-    const fetchMyItems = async () => {
-      try {
-        const q = query(
-          collection(db, 'items'),
-          where('postedBy', '==', user.uid),
-          orderBy('createdAt', 'desc')
-        )
-        const snapshot = await getDocs(q)
-        setItems(snapshot.docs.map(d => ({ id: d.id, ...d.data() })))
-      } catch (err) { console.error(err) }
-      setLoading(false)
-    }
     fetchMyItems()
   }, [user, navigate])
 
@@ -226,7 +324,12 @@ function Profile() {
   const totalReturned = items.filter(i => i.status === 'returned' || i.status === 'reclaimed').length
   const totalActive   = items.filter(i => i.status === 'active').length
 
-  if (loading) return <p style={{ padding: '3rem 2rem', color: '#999' }}>Loading...</p>
+  if (loading) return <ProfileSkeleton />
+  if (error) return (
+    <div style={{ maxWidth: '640px', margin: '2rem auto', padding: '0 1rem' }}>
+      <ErrorState onRetry={fetchMyItems} />
+    </div>
+  )
 
   return (
     <div style={{ maxWidth: '640px', margin: '2rem auto', padding: '0 1rem' }}>
@@ -255,10 +358,11 @@ function Profile() {
         ))}
       </div>
 
+      {/* Found items */}
       <div style={{ marginBottom: '2rem' }}>
         <SectionHeader title="Items I Found & Reported" count={myFound.length} />
         {myFound.length === 0
-          ? <EmptyState msg="You haven't reported any found items yet." />
+          ? <EmptyState msg="You haven't reported any found items yet." cta />
           : <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               {myFound.map(item => (
                 <ItemRow key={item.id} item={item}
@@ -271,10 +375,11 @@ function Profile() {
         }
       </div>
 
+      {/* Lost items */}
       <div style={{ marginBottom: '2rem' }}>
         <SectionHeader title="Items I Lost & Reported" count={myLost.length} />
         {myLost.length === 0
-          ? <EmptyState msg="You haven't reported any lost items yet." />
+          ? <EmptyState msg="You haven't reported any lost items yet." cta />
           : <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               {myLost.map(item => (
                 <ItemRow key={item.id} item={item}
